@@ -156,35 +156,6 @@ export default function UserForm() {
                                         />
                                     </div>
 
-                                    <div className="mb-3 pt-0">
-                                        <label>Fecha de Nacimiento</label>
-                                    </div>
-                                    <div className="mb-3 pt-0">
-                                        <input
-                                            value={birthdate}
-                                            onChange={({ target }) => setBirthdate(target.value)}
-                                            type="text"
-                                            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
-                                        />
-                                    </div>
-
-                                    <div className="mb-3 pt-0">
-                                        <label>Fecha de Nacimiento</label>
-                                    </div>
-                                    <div className="mb-3 pt-0">
-                                        <select
-                                            value={birthdate}
-                                            onChange={({ target }) => setBirthdate(target.value)}
-                                            defaultValue={''}
-                                            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
-                                        >
-                                            <option value={''}>Seleccione...</option>
-                                            {authors.map((element, index) => (
-                                                <option key={index} value={element.id}>{element.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
                                     <hr />
 
                                     <div className="mt-3 pt-0">
