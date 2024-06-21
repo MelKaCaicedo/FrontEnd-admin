@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import authorService from "services/authorService";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function Authors() {
   const [data, setData] = useState([])
@@ -23,6 +24,11 @@ export default function Authors() {
     try {
       await authorService.delete(id)
       getAuthors()
+
+      await Swal.fire({
+        title: 'Se elimino correctamente',
+        icon: 'success',
+      })
     } catch (error) {
       console.log(error);
     }
@@ -102,14 +108,6 @@ export default function Authors() {
                           ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
                           : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
                       }
-                    >Biografía</th>
-                    <th
-                      className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                        (color === "light"
-                          ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                          : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                      }
                     >Sitio Web</th>
                     <th
                       className={
@@ -135,9 +133,6 @@ export default function Authors() {
                       </td>
                       <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                         {element.nationality}
-                      </td>
-                      <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                        {element.biography}
                       </td>
                       <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                         {element.website}

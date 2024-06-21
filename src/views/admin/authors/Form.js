@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import authorService from "services/authorService";
+import Swal from "sweetalert2";
 
 export default function AuthorForm() {
 
@@ -17,7 +18,7 @@ export default function AuthorForm() {
     useEffect(() => {
         if (id)
             setAuthor()
-    }, []);
+    }, [id]);
 
     const setAuthor = async _ => {
         try {
@@ -38,16 +39,38 @@ export default function AuthorForm() {
 
     const handleSubmit = async event => {
         event.preventDefault();
+        
         try {
-            console.log(id)
             if (id) {
                 await authorService.put(id, { first_name, last_name, birthdate, nationality, biography, website })
             } else {
-                await authorService.post({ first_name, last_name, birthdate, nationality, biography, website })
+                const { data } = await authorService.get()
+                const newId = (data.length > 0) ? data[data.length - 1].id + 1 : 1;
+
+                await authorService.post({ id: newId, first_name, last_name, birthdate, nationality, biography, website })
             }
+            await Swal.fire({
+                title: 'Se guardo correctamente',
+                icon: 'success',
+            })
             window.location.href = '/authors'
         } catch (error) {
-            console.log(error);
+            const { data, status } = error
+
+            let mgs = '';
+            if (status == 422 && data.error) {
+                for (let key in data.error) {
+                    if (data.error.hasOwnProperty(key))
+                        mgs += `<p>${key}: ${data.error[key]}</p>`
+                }
+                
+                Swal.fire({
+                    title: 'Error de validaciones',
+                    html: mgs,
+                    icon: 'error',
+                })
+            }
+
         }
     }
 

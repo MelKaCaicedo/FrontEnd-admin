@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import bookService from "services/bookService";
 import loanService from "services/loanService";
+import userService from "services/userService";
+import Swal from "sweetalert2";
 
-export default function LoanForm() {
+export default function LoanForm()
+{
+    const [users, setUsers] = useState([])
+    const [books, setBooks] = useState([])
 
-    const [user, setUser] = useState('')
-    const [book, setBook] = useState('')
+    const [user_id, setUserId] = useState('')
+    const [book_isbn, setBookIsbn] = useState('')
     const [loan_date, setLoanDate] = useState('')
     const [return_date, setReturnDate] = useState('')
     const [status, setStatus] = useState('')
@@ -15,6 +21,8 @@ export default function LoanForm() {
     const { id } = useParams()
 
     useEffect(() => {
+        getData()
+
         if (id)
             setLoan()
     }, []);
@@ -24,8 +32,8 @@ export default function LoanForm() {
             const res = await loanService.get(id)
             const loan = res.data
 
-            setBook(loan.book)
-            setUser(loan.user)
+            setBookIsbn(loan.book.isbn)
+            setUserId(loan.user.id)
             setLoanDate(loan.loan_date)
             setReturnDate(loan.return_date)
             setStatus(loan.status)
@@ -36,18 +44,49 @@ export default function LoanForm() {
         }
     }
 
+    const getData = async () => {
+        const users = await userService.get()
+        const books = await bookService.get()
+        setUsers(users.data)
+        setBooks(books.data)
+    }
+
     const handleSubmit = async event => {
         event.preventDefault();
 
         try {
-            if (id) {
-                await loanService.put(id, { user, book, loan_date, return_date, status, notes })
-            } else {
-                await loanService.post({ user, book, loan_date, return_date, status, notes })
-            }
+            let loans = await loanService.get()
+            loans = loans.data;
+
+            const newId = (loans.length > 0) ? loans[loans.length - 1].id + 1 : 1;
+
+            const { data } = id
+                ? await loanService.put(id, { user_id, book_isbn, loan_date, return_date, status, notes })
+                : await loanService.post({ id: newId, user_id, book_isbn, loan_date, return_date, status, notes })
+            ;
+
+            await Swal.fire({
+                title: data,
+                icon: 'success',
+            })
+
             window.location.href = '/loans'
         } catch (error) {
-            console.log(error);
+            const { data, status } = error
+
+            let mgs = '';
+            if (status == 422 && data.error) {
+                for (let key in data.error) {
+                    if (data.error.hasOwnProperty(key))
+                        mgs += `<p>${key}: ${data.error[key]}</p>`
+                }
+                
+                Swal.fire({
+                    title: 'Error de validaciones',
+                    html: mgs,
+                    icon: 'error',
+                })
+            }
         }
     }
 
@@ -79,13 +118,13 @@ export default function LoanForm() {
                                     </div>
                                     <div className="mb-3 pt-0">
                                         <select
-                                            value={user}
-                                            onChange={({ target }) => setUser(target.value)}
+                                            value={user_id}
+                                            onChange={({ target }) => setUserId(target.value)}
                                             defaultValue={''}
                                             className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
                                         >
                                             <option value={''}>Seleccione...</option>
-                                            {user.map((element, index) => (
+                                            {users.map((element, index) => (
                                                 <option key={index} value={element.id}>{element.name}</option>
                                             ))}
                                         </select>
@@ -96,14 +135,14 @@ export default function LoanForm() {
                                     </div>
                                     <div className="mb-3 pt-0">
                                         <select
-                                            value={book}
-                                            onChange={({ target }) => setBook(target.value)}
+                                            value={book_isbn}
+                                            onChange={({ target }) => setBookIsbn(target.value)}
                                             defaultValue={''}
                                             className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
                                         >
                                             <option value={''}>Seleccione...</option>
-                                            {book.map((element, index) => (
-                                                <option key={index} value={element.id}>{element.name}</option>
+                                            {books.map((element, index) => (
+                                                <option key={index} value={element.isbn}>{element.title}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -115,7 +154,7 @@ export default function LoanForm() {
                                         <input
                                             value={loan_date}
                                             onChange={({ target }) => setLoanDate(target.value)}
-                                            type="text"
+                                            type="date"
                                             className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
                                         />
                                     </div>
@@ -127,7 +166,7 @@ export default function LoanForm() {
                                         <input
                                             value={return_date}
                                             onChange={({ target }) => setReturnDate(target.value)}
-                                            type="text"
+                                            type="date"
                                             className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
                                         />
                                     </div>

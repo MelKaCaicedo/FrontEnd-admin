@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 import authorService from "services/authorService";
 import bookService from "services/bookService";
+import Swal from "sweetalert2";
 
 export default function BookForm() {
     const [authors, setAuthors] = useState([])
@@ -60,9 +61,28 @@ export default function BookForm() {
             } else {
                 await bookService.post({ isbn, title, author_id, publisher, year, price, pages })
             }
+
+            await Swal.fire({
+                title: 'Se guardo correctamente',
+                icon: 'success',
+            })
             window.location.href = '/books'
         } catch (error) {
-            console.log(error);
+            const { data, status } = error
+
+            let mgs = '';
+            if (status == 422 && data.error) {
+                for (let key in data.error) {
+                    if (data.error.hasOwnProperty(key))
+                        mgs += `<p>${key}: ${data.error[key]}</p>`
+                }
+                
+                Swal.fire({
+                    title: 'Error de validaciones',
+                    html: mgs,
+                    icon: 'error',
+                })
+            }
         }
     }
 
@@ -165,8 +185,8 @@ export default function BookForm() {
                                     </div>
                                     <div className="mb-3 pt-0">
                                         <input
-                                            value={author_id}
-                                            onChange={({ target }) => setAuthorId(target.value)}
+                                            value={pages}
+                                            onChange={({ target }) => setPages(target.value)}
                                             type="text"
                                             className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
                                         />

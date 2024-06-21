@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import userService from "services/userService";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 
 export default function Users() {
@@ -8,7 +9,7 @@ export default function Users() {
   const color = 'light'
 
   useEffect(() => {
-    //getUsers()
+    getUsers()
   }, []);
 
   const getUsers = async _ => {
@@ -24,6 +25,11 @@ export default function Users() {
     try {
       await userService.delete(id)
       getUsers()
+
+      await Swal.fire({
+        title: 'Se elimino correctamente',
+        icon: 'success',
+      })
     } catch (error) {
       console.log(error);
     }
@@ -103,6 +109,14 @@ export default function Users() {
                           : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
                       }
                     >Teléfono</th>
+                    <th
+                      className={
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                        (color === "light"
+                          ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                          : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+                      }
+                    >Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -122,6 +136,20 @@ export default function Users() {
                       </td>
                       <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                         {element.phone_number}
+                      </td>
+                      <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                        <Link
+                          className="bg-emerald-500 text-white active:bg-emerald-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                          to={"/users/edit/" + element.id}
+                        >
+                          <i className="fas fa-pen"></i>
+                        </Link>
+                        <button
+                          className="bg-red-500 text-white active:bg-red-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                          onClick={ _ => handleDelete(element.id) }
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
                       </td>
                     </tr>
                   ))}

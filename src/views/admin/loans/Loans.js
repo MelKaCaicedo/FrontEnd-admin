@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import loanService from "services/loanService";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function Loans() {
   const [data, setData] = useState([])
   const color = 'light'
 
   useEffect(() => {
-    //  getLoans()
+    getLoans()
   }, []);
 
   const getLoans = async _ => {
@@ -23,6 +24,11 @@ export default function Loans() {
     try {
       await loanService.delete(id)
       getLoans()
+      
+      await Swal.fire({
+        title: 'Se elimino correctamente',
+        icon: 'success',
+      })
     } catch (error) {
       console.log(error);
     }
@@ -86,7 +92,7 @@ export default function Loans() {
                           ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
                           : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
                       }
-                    >Fecha de Préstamo</th>
+                    >Fecha del Préstamo</th>
                     <th
                       className={
                         "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
@@ -94,7 +100,7 @@ export default function Loans() {
                           ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
                           : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
                       }
-                    >Fecha deDevolución</th>
+                    >Fecha de Devolución</th>
                     <th
                       className={
                         "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +

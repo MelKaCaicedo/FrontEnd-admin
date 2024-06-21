@@ -2,49 +2,35 @@ import React, { useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
-import authorService from "services/authorService";
-import bookService from "services/bookService";
+import userService from "services/userService";
+import Swal from "sweetalert2";
 
 export default function UserForm() {
-
-    const [authors, setAuthors] = useState([])
-
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [birthdate, setBirthdate] = useState('')
+    const [birthDate, setBirthDate] = useState('')
     const [address, setAddress] = useState('')
     const [phone_number, setPhoneNumber] = useState('')
 
     const { id } = useParams()
 
     useEffect(() => {
-        getAuthors()
-
         if (id)
-            setBook()
-    }, []);
+            setUser()
+    }, [id]);
 
-    const getAuthors = async _ => {
+    const setUser = async _ => {
         try {
-            const res = await authorService.get()
-            setAuthors(res.data)
-        } catch (error) {
-            console.log(error);
-        }
-    }
+            const res = await userService.get(id)
+            const user = res.data
 
-    const setBook = async _ => {
-        try {
-            const res = await bookService.get(id)
-            const book = res.data
-
-            setName(book.name)
-            setEmail(book.email)
-            setPassword(book.price)
-            setBirthdate(book.author_id)
-            setAddress(book.address)
-            setPhoneNumber(book.phone_number)
+            setName(user.name)
+            setEmail(user.email)
+            
+            setBirthDate(user.birthdate)
+            setAddress(user.address)
+            setPhoneNumber(user.phone_number)
         } catch (error) {
             console.log(error);
         }
@@ -55,13 +41,36 @@ export default function UserForm() {
 
         try {
             if (id) {
-                await bookService.put(id, { name, email, password, birthdate, address, phone_number })
+                await userService.put(id, { name, email, password, birthdate: birthDate, address, phone_number })
             } else {
-                await bookService.post({ name, email, password, birthdate, address, phone_number })
+                const { data } = await userService.get()
+                const newId = (data.length > 0) ? data[data.length - 1].id + 1 : 1;
+
+                await userService.post({ id: newId, name, email, password, birthdate: birthDate, address, phone_number })
             }
-            window.location.href = '/books'
+
+            await Swal.fire({
+                title: 'Se guardo correctamente',
+                icon: 'success',
+            })
+
+            window.location.href = '/users'
         } catch (error) {
-            console.log(error);
+            const { data, status } = error
+
+            let mgs = '';
+            if (status == 422 && data.error) {
+                for (let key in data.error) {
+                    if (data.error.hasOwnProperty(key))
+                        mgs += `<p>${key}: ${data.error[key]}</p>`
+                }
+                
+                Swal.fire({
+                    title: 'Error de validaciones',
+                    html: mgs,
+                    icon: 'error',
+                })
+            }
         }
     }
 
@@ -117,7 +126,7 @@ export default function UserForm() {
                                         <input
                                             value={password}
                                             onChange={({ target }) => setPassword(target.value)}
-                                            type="text"
+                                            type="password"
                                             className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
                                         />
                                     </div>
@@ -126,9 +135,9 @@ export default function UserForm() {
                                     </div>
                                     <div className="mb-3 pt-0">
                                         <input
-                                            value={birthdate}
-                                            onChange={({ target }) => setBirthdate(target.value)}
-                                            type="text"
+                                            value={birthDate}
+                                            onChange={({ target }) => setBirthDate(target.value)}
+                                            type="date"
                                             className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full"
                                         />
                                     </div>
